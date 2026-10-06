@@ -1,7 +1,10 @@
 from database import SessionLocal, Job
 from datetime import datetime
+import requests
+from bs4 import BeautifulSoup
+import random
 
-# Sample job data from multiple sources
+# Sample job data from multiple sources (fallback if scraping fails)
 SAMPLE_JOBS = [
     {
         "title": "Senior Python Developer",
@@ -136,6 +139,41 @@ SAMPLE_JOBS = [
 ]
 
 
+def fetch_real_jobs():
+    """Fetch jobs from public API"""
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+        url = "https://jobs.github.com/positions.json?description=python&location=remote"
+        response = requests.get(url, headers=headers, timeout=5)
+
+        if response.status_code == 200:
+            jobs = response.json()
+            real_jobs = []
+
+            for job in jobs[:3]:
+                real_jobs.append({
+                    "title": job.get("title", ""),
+                    "company": job.get("company", ""),
+                    "location": job.get("location", "Remote"),
+                    "job_type": "Full-time",
+                    "salary_min": 100000,
+                    "salary_max": 200000,
+                    "salary_text": "PKR 100,000 - 200,000",
+                    "experience": "Mid",
+                    "description": job.get("description", "")[:200] if job.get("description") else "Software Development Role",
+                    "apply_link": job.get("url", ""),
+                    "source": "GitHub Jobs"
+                })
+
+            return real_jobs
+    except Exception as e:
+        print(f"⚠️ Real job fetch failed: {str(e)}")
+
+    return []
+
+
 def fetch_and_store_jobs():
     """Fetch jobs and store in database"""
     db = SessionLocal()
@@ -143,8 +181,14 @@ def fetch_and_store_jobs():
     # Clear existing jobs
     db.query(Job).delete()
 
-    # Add sample jobs
-    for job_data in SAMPLE_JOBS:
+    # Try to fetch real jobs first
+    real_jobs = fetch_real_jobs()
+
+    # Combine real jobs with sample jobs
+    jobs_to_store = real_jobs + SAMPLE_JOBS
+
+    # Add jobs to database
+    for job_data in jobs_to_store:
         job = Job(
             title=job_data["title"],
             company=job_data["company"],
@@ -162,7 +206,7 @@ def fetch_and_store_jobs():
 
     db.commit()
     db.close()
-    print(f"✅ Stored {len(SAMPLE_JOBS)} jobs in database!")
+    print(f"✅ Stored {len(jobs_to_store)} jobs in database! ({len(real_jobs)} real + {len(SAMPLE_JOBS)} sample)")
 
 
 if __name__ == "__main__":

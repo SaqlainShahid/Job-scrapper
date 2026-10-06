@@ -1,0 +1,11 @@
+{
+  "name": "Job Scraper",
+  "description": "Real-time job aggregation platform",
+  "build": {
+    "builder": "dockerfile"
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "restartPolicyType": "on_failure"
+  }
+}
