@@ -1,0 +1,18 @@
+[build]
+  command = "echo 'Static site deployment'"
+  publish = "."
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[dev]
+  publish = "."
+  port = 8080
+
+[context.production]
+  environment = { SITE_ENV = "production" }
+
+[context.deploy-preview]
+  environment = { SITE_ENV = "preview" }

@@ -1,11 +1,14 @@
 {
-  "name": "Job Scraper",
-  "description": "Real-time job aggregation platform",
-  "build": {
-    "builder": "dockerfile"
-  },
-  "deploy": {
-    "numReplicas": 1,
-    "restartPolicyType": "on_failure"
+  "$schema": "https://railway.app/schema.json",
+  "name": "Job Scraper Backend",
+  "description": "FastAPI Job Scraper with Real-time Filtering",
+  "keywords": ["fastapi", "python", "jobs", "api", "docker"],
+  "gitRepo": "https://github.com/SaqlainShahid/Job-scrapper",
+  "gitBranch": "main",
+  "port": 8000,
+  "startCommand": "uvicorn app:app --host 0.0.0.0 --port $PORT",
+  "buildCommand": "pip install -r requirements.txt",
+  "envVars": {
+    "PYTHONUNBUFFERED": "1"
   }
 }
